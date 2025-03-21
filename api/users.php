@@ -3,12 +3,12 @@ define('IN_CHAT', true);
 require_once '../config.php';
 header('Content-Type: application/json');
 
-// 检查用户是否登录
+// check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    die(json_encode(['error' => '未登录']));
+    die(json_encode(['error' => 'Not logged in']));
 }
 
-// 处理心跳请求
+// handle  request
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'heartbeat') {
     $stmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     exit;
 }
 
-// 获取在线用户列表
+// get online users list
 if ($_SERVER['REQUEST_METHOD'] == 'GET' && !isset($_GET['user_id'])) {
     $stmt = $pdo->prepare("
         SELECT u.id, u.username, u.nickname, u.avatar, u.signature, u.is_admin,
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && !isset($_GET['user_id'])) {
     exit;
 }
 
-// 获取用户详细信息（用于名片显示）
+// get user detailed information (for business card display)
 if (isset($_GET['user_id'])) {
     $user_id = (int)$_GET['user_id'];
     $stmt = $pdo->prepare("
@@ -52,7 +52,7 @@ if (isset($_GET['user_id'])) {
     if ($user) {
         echo json_encode(['user' => $user]);
     } else {
-        echo json_encode(['error' => '用户不存在']);
+        echo json_encode(['error' => 'User does not exist']);
     }
     exit;
 } 

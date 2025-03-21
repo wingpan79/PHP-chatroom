@@ -2,16 +2,16 @@
 define('IN_CHAT', true);
 require_once '../config.php';
 
-// 设置在线超时时间（秒）
-define('ONLINE_TIMEOUT', 300); // 5分钟
+// set online timeout (seconds)
+define('ONLINE_TIMEOUT', 300); // 5 minutes
 
-// 清理超时的在线用户
+// clean offline users
 function cleanOfflineUsers($pdo) {
     $stmt = $pdo->prepare("DELETE FROM online_users WHERE last_active < DATE_SUB(NOW(), INTERVAL ? SECOND)");
     $stmt->execute([ONLINE_TIMEOUT]);
 }
 
-// 更新或添加在线用户
+// update or add online user
 function updateOnlineUser($pdo, $userId, $page = '') {
     $stmt = $pdo->prepare("INSERT INTO online_users (user_id, last_active, current_page) 
                           VALUES (?, NOW(), ?) 
@@ -19,7 +19,7 @@ function updateOnlineUser($pdo, $userId, $page = '') {
     $stmt->execute([$userId, $page, $page]);
 }
 
-// 获取在线用户列表
+// get online users list
 function getOnlineUsers($pdo) {
     cleanOfflineUsers($pdo);
     
@@ -31,11 +31,11 @@ function getOnlineUsers($pdo) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// API路由处理
+// API route processing
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_SESSION['user_id'])) {
         http_response_code(401);
-        die(json_encode(['error' => '未登录']));
+        die(json_encode(['error' => 'Not logged in']));
     }
     
     $page = isset($_POST['page']) ? $_POST['page'] : '';

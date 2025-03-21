@@ -1,6 +1,6 @@
 <?php
 if (file_exists('config.php')) {
-    die('聊天室已经安装，如需重新安装请先删除 config.php 文件。');
+    die('Chat room already installed, please delete config.php file to reinstall.');
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     ];
     
     try {
-        // 连接数据库
+        // connect to database
         $pdo = new PDO(
             "mysql:host={$db_config['host']};charset=utf8mb4",
             $db_config['username'],
@@ -26,11 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         );
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
-        // 创建数据库
+        // create database
         $pdo->exec("CREATE DATABASE IF NOT EXISTS {$db_config['database']} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
         $pdo->exec("USE {$db_config['database']}");
         
-        // 创建用户表
+        // create user table
         $pdo->exec("CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
             username VARCHAR(50) UNIQUE NOT NULL,
@@ -39,14 +39,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             avatar VARCHAR(255),
             signature TEXT,
             ip VARCHAR(45),
-            status TINYINT DEFAULT 1 COMMENT '1:正常,0:禁用',
+            status TINYINT DEFAULT 1,
             is_admin TINYINT DEFAULT 0,
             custom_location VARCHAR(100) DEFAULT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )");
         
-        // 创建消息表
+        // create message table
         $pdo->exec("CREATE TABLE IF NOT EXISTS messages (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )");
         
-        // 创建用户位置表
+        // create user location table
         $pdo->exec("CREATE TABLE IF NOT EXISTS user_locations (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )");
         
-        // 创建IP黑名单表
+        // create IP blacklist table
         $pdo->exec("CREATE TABLE IF NOT EXISTS ip_blacklist (
             id INT AUTO_INCREMENT PRIMARY KEY,
             ip VARCHAR(45) NOT NULL,
@@ -74,12 +74,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             UNIQUE KEY (ip)
         )");
         
-        // 创建管理员账号
+        // create admin account
         $admin_password = password_hash($admin_info['password'], PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("INSERT INTO users (username, password, nickname, is_admin) VALUES (?, ?, ?, 1)");
         $stmt->execute([$admin_info['username'], $admin_password, $admin_info['nickname']]);
         
-        // 创建必要的目录
+        // create necessary directories
         $directories = [
             'uploads',
             'uploads/avatars',
@@ -92,22 +92,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
         
-        // 生成随机密钥
+        // generate random secret key
         $secret_key = bin2hex(random_bytes(32));
         
-        // 创建配置文件
+        // create config file
         $config_content = <<<EOT
 <?php
-// 安全检查：防止直接访问PHP文件
+// Security check: prevent direct access to PHP file
 defined('IN_CHAT') or exit('Access Denied');
 
-// 开启session
+// start session
 session_start();
 
-// 设置时区
-date_default_timezone_set('Asia/Shanghai');
+// set timezone
+date_default_timezone_set('Europe/London');
 
-// 数据库配置
+// database configuration
 \$db_config = [
     'host' => '{$db_config['host']}',
     'username' => '{$db_config['username']}',
@@ -115,9 +115,9 @@ date_default_timezone_set('Asia/Shanghai');
     'database' => '{$db_config['database']}'
 ];
 
-// 站点配置
+// site configuration
 \$site_config = [
-    'name' => '在线聊天室',
+    'name' => 'Online Chat Room',
     'url' => (isset(\$_SERVER['HTTPS']) && \$_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}",
     'upload_path' => __DIR__ . '/uploads',
     'avatar_path' => __DIR__ . '/uploads/avatars',
@@ -128,13 +128,13 @@ date_default_timezone_set('Asia/Shanghai');
     'secret_key' => '$secret_key' // 用于加密等操作的密钥
 ];
 
-// 错误报告设置
+// error reporting settings
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/error.log');
 
-// 数据库连接
+// database connection
 try {
     \$pdo = new PDO(
         "mysql:host={\$db_config['host']};dbname={\$db_config['database']};charset=utf8mb4",
@@ -147,11 +147,11 @@ try {
         ]
     );
 } catch(PDOException \$e) {
-    error_log("数据库连接失败: " . \$e->getMessage());
-    die("系统维护中，请稍后再试...");
+    error_log("Database connection failed: " . \$e->getMessage());
+    die("System maintenance, please try again later...");
 }
 
-// 辅助函数
+// helper functions
 function is_ajax_request() {
     return isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && 
            strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
@@ -181,23 +181,22 @@ function check_login() {
     }
 }
 
-// 定义常量
 define('IN_CHAT', true);
 define('UPLOAD_PATH', \$site_config['upload_path']);
 define('AVATAR_PATH', \$site_config['avatar_path']);
 EOT;
         
-        // 写入配置文件
+        // write config file
         if (file_put_contents('config.php', $config_content)) {
-            // 设置文件权限为640（所有者可读写，组可读，其他人无权限）
+            // set file permissions to 640 (owner can read/write, group can read, others have no permissions)
             chmod('config.php', 0640);
         } else {
-            throw new Exception("无法创建配置文件");
+            throw new Exception("Failed to create config file");
         }
         
-        $success = "安装成功！请删除 install.php 文件以确保安全。";
+        $success = "Installation successful! Please delete install.php file to ensure security.";
     } catch(PDOException $e) {
-        $error = "安装失败: " . $e->getMessage();
+        $error = "Installation failed: " . $e->getMessage();
     }
 }
 ?>
@@ -205,7 +204,7 @@ EOT;
 <!DOCTYPE html>
 <html>
 <head>
-    <title>安装 - 在线聊天室</title>
+    <title>Install - Online Chat Room</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
@@ -214,7 +213,7 @@ EOT;
             <div class="col-md-8">
                 <div class="card shadow-sm">
                     <div class="card-header">
-                        <h4 class="mb-0">在线聊天室 - B站一支小丑鱼</h4>
+                        <h4 class="mb-0">Online Chat Room</h4>
                     </div>
                     <div class="card-body">
                         <?php if (isset($success)): ?>
@@ -222,11 +221,11 @@ EOT;
                                 <?php echo $success; ?>
                                 <hr>
                                 <p class="mb-0">
-                                    管理员账号：<?php echo htmlspecialchars($admin_info['username']); ?><br>
-                                    管理员密码：<?php echo htmlspecialchars($admin_info['password']); ?>
+                                    Admin account: <?php echo htmlspecialchars($admin_info['username']); ?><br>
+                                    Admin password: <?php echo htmlspecialchars($admin_info['password']); ?>
                                 </p>
                                 <hr>
-                                <a href="login.php" class="btn btn-primary">前往登录</a>
+                                <a href="login.php" class="btn btn-primary">Go to login</a>
                             </div>
                         <?php elseif (isset($error)): ?>
                             <div class="alert alert-danger"><?php echo $error; ?></div>
@@ -234,42 +233,42 @@ EOT;
 
                         <?php if (!isset($success)): ?>
                         <form method="POST" class="needs-validation" novalidate>
-                            <h5 class="mb-3">数据库配置</h5>
+                            <h5 class="mb-3">Database configuration</h5>
                             <div class="mb-3">
-                                <label class="form-label">数据库主机</label>
+                                <label class="form-label">Database host</label>
                                 <input type="text" name="db_host" class="form-control" value="localhost" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">数据库用户名</label>
+                                <label class="form-label">Database username</label>
                                 <input type="text" name="db_username" class="form-control" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">数据库密码</label>
+                                <label class="form-label">Database password</label>
                                 <input type="password" name="db_password" class="form-control">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">数据库名</label>
+                                <label class="form-label">Database name</label>
                                 <input type="text" name="db_database" class="form-control" value="chat_room" required>
                             </div>
 
                             <hr class="my-4">
 
-                            <h5 class="mb-3">管理员账号设置</h5>
+                            <h5 class="mb-3">Admin account settings</h5>
                             <div class="mb-3">
-                                <label class="form-label">管理员用户名</label>
+                                <label class="form-label">Admin username</label>
                                 <input type="text" name="admin_username" class="form-control" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">管理员密码</label>
+                                <label class="form-label">Admin password</label>
                                 <input type="password" name="admin_password" class="form-control" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">管理员昵称</label>
-                                <input type="text" name="admin_nickname" class="form-control" value="管理员" required>
+                                <label class="form-label">Admin nickname</label>
+                                <input type="text" name="admin_nickname" class="form-control" value="Admin" required>
                             </div>
 
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">开始安装</button>
+                                <button type="submit" class="btn btn-primary">Start installation</button>
                             </div>
                         </form>
                         <?php endif; ?>
@@ -281,7 +280,7 @@ EOT;
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // 表单验证
+    // form validation
     (function () {
         'use strict'
         var forms = document.querySelectorAll('.needs-validation')

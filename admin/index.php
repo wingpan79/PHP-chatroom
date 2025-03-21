@@ -2,13 +2,13 @@
 define('IN_CHAT', true);
 require_once '../config.php';
 
-// 检查是否是管理员
+// check if user is admin
 if (!isset($_SESSION['user_id']) || !$_SESSION['is_admin']) {
     header("Location: ../login.php");
     exit;
 }
 
-// 获取统计数据
+// get statistics data
 $stats = [
     'total_users' => $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn(),
     'active_users' => $pdo->query("SELECT COUNT(*) FROM users WHERE status = 1")->fetchColumn(),
@@ -23,7 +23,7 @@ $stats = [
 <!DOCTYPE html>
 <html>
 <head>
-    <title>管理后台 - 在线聊天室</title>
+    <title>Admin Dashboard - Online Chat Room</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
@@ -65,39 +65,39 @@ $stats = [
 <body>
     <div class="container-fluid">
         <div class="row">
-            <!-- 侧边栏 -->
+           
             <div class="col-md-2 px-0 sidebar">
                 <div class="text-center mb-4">
-                    <h4 class="text-white">管理后台</h4>
+                    <h4 class="text-white">Admin Dashboard</h4>
                 </div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a class="nav-link active" href="index.php">
-                            <i class="fas fa-tachometer-alt"></i> 仪表盘
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="users.php">
-                            <i class="fas fa-users"></i> 用户管理
+                            <i class="fas fa-users"></i> User Management
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="ip_blacklist.php">
-                            <i class="fas fa-ban"></i> IP封禁
+                            <i class="fas fa-ban"></i> IP Ban
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="../chat.php">
-                            <i class="fas fa-comments"></i> 返回聊天室
+                            <i class="fas fa-comments"></i> Back to Chat Room
                         </a>
                     </li>
                 </ul>
             </div>
 
-            <!-- 主要内容区 -->
+            <!-- main content area -->
             <div class="col-md-10 p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>系统概况</h2>
+                    <h2>System Overview</h2>
                     <div class="text-muted">
                         <i class="far fa-clock"></i> 
                         <?php echo date('Y-m-d H:i:s'); ?>
@@ -105,13 +105,13 @@ $stats = [
                 </div>
 
                 <div class="row">
-                    <!-- 总用户数 -->
+                  
                     <div class="col-md-3 mb-4">
                         <div class="card stat-card bg-primary text-white">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="card-title mb-0">总用户数</h6>
+                                        <h6 class="card-title mb-0">Total Users</h6>
                                         <h2 class="mt-2 mb-0"><?php echo $stats['total_users']; ?></h2>
                                     </div>
                                     <i class="fas fa-users stat-icon"></i>
@@ -120,13 +120,13 @@ $stats = [
                         </div>
                     </div>
 
-                    <!-- 活跃用户 -->
+                    <!-- active users -->
                     <div class="col-md-3 mb-4">
                         <div class="card stat-card bg-success text-white">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="card-title mb-0">活跃用户</h6>
+                                        <h6 class="card-title mb-0">Active Users</h6>
                                         <h2 class="mt-2 mb-0"><?php echo $stats['active_users']; ?></h2>
                                     </div>
                                     <i class="fas fa-user-check stat-icon"></i>
@@ -135,13 +135,13 @@ $stats = [
                         </div>
                     </div>
 
-                    <!-- 被封禁用户 -->
+                    <!-- banned users -->
                     <div class="col-md-3 mb-4">
                         <div class="card stat-card bg-danger text-white">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="card-title mb-0">被封禁用户</h6>
+                                        <h6 class="card-title mb-0">Banned Users</h6>
                                         <h2 class="mt-2 mb-0"><?php echo $stats['banned_users']; ?></h2>
                                     </div>
                                     <i class="fas fa-user-slash stat-icon"></i>
@@ -150,13 +150,13 @@ $stats = [
                         </div>
                     </div>
 
-                    <!-- IP黑名单 -->
+                    <!-- IP blacklist -->
                     <div class="col-md-3 mb-4">
                         <div class="card stat-card bg-warning text-white">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="card-title mb-0">IP黑名单</h6>
+                                        <h6 class="card-title mb-0">IP Blacklist</h6>
                                         <h2 class="mt-2 mb-0"><?php echo $stats['banned_ips']; ?></h2>
                                     </div>
                                     <i class="fas fa-ban stat-icon"></i>
@@ -165,13 +165,13 @@ $stats = [
                         </div>
                     </div>
 
-                    <!-- 总消息数 -->
+                    <!-- total messages -->
                     <div class="col-md-3 mb-4">
                         <div class="card stat-card bg-info text-white">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="card-title mb-0">总消息数</h6>
+                                        <h6 class="card-title mb-0">Total Messages</h6>
                                         <h2 class="mt-2 mb-0"><?php echo $stats['total_messages']; ?></h2>
                                     </div>
                                     <i class="fas fa-comments stat-icon"></i>
@@ -180,13 +180,13 @@ $stats = [
                         </div>
                     </div>
 
-                    <!-- 今日消息数 -->
+                    <!-- today messages -->
                     <div class="col-md-3 mb-4">
                         <div class="card stat-card bg-secondary text-white">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="card-title mb-0">今日消息数</h6>
+                                        <h6 class="card-title mb-0">Today Messages</h6>
                                         <h2 class="mt-2 mb-0"><?php echo $stats['today_messages']; ?></h2>
                                     </div>
                                     <i class="fas fa-comment-dots stat-icon"></i>
@@ -195,13 +195,13 @@ $stats = [
                         </div>
                     </div>
 
-                    <!-- 今日活跃用户 -->
+                    <!-- today active users -->
                     <div class="col-md-3 mb-4">
                         <div class="card stat-card" style="background: #6f42c1; color: white;">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="card-title mb-0">今日活跃用户</h6>
+                                        <h6 class="card-title mb-0">Today Active Users</h6>
                                         <h2 class="mt-2 mb-0"><?php echo $stats['today_users']; ?></h2>
                                     </div>
                                     <i class="fas fa-user-clock stat-icon"></i>

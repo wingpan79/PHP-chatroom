@@ -3,13 +3,13 @@ $(document).ready(function() {
     let isScrolledToBottom = true;
     let picker = null;
     
-    // 检测是否滚动到底部
+    // check if scrolled to bottom
     $('#chat-messages').scroll(function() {
         const element = $(this)[0];
         isScrolledToBottom = element.scrollHeight - element.scrollTop === element.clientHeight;
     });
     
-    // 定期获取新消息
+    // fetch new messages periodically
     function fetchMessages() {
         $.get('api/messages.php', { last_id: lastMessageId })
             .done(function(response) {
@@ -24,11 +24,11 @@ $(document).ready(function() {
                 }
             })
             .fail(function(xhr, status, error) {
-                console.error('获取消息失败:', error);
+                console.error('failed to get messages', error);
             });
     }
     
-    // 添加消息到聊天窗口
+    // add message to chat window
     function appendMessage(message) {
         const isSelf = message.user_id == $('#current-user-id').val();
         const html = `
@@ -37,7 +37,7 @@ $(document).ready(function() {
                 <div class="message-content">
                     <span class="username" data-user-id="${message.user_id}">
                         ${message.nickname || message.username}
-                        ${message.is_admin === '1' ? '<span class="admin-badge"><i class="fas fa-shield-alt"></i>管理员</span>' : ''}
+                        ${message.is_admin === '1' ? '<span class="admin-badge"><i class="fas fa-shield-alt"></i>Admin</span>' : ''}
                         <small class="text-muted location-text">${message.location ? `(${message.location})` : ''}</small>
                     </span>
                     <div class="bubble">
@@ -57,50 +57,50 @@ $(document).ready(function() {
         }
     }
     
-    // 格式化消息内容
+    // format message content
     function formatMessage(content) {
-        // 转义HTML
+        // escape HTML
         content = escapeHtml(content);
-        // 将URL转换为可点击的链接
+        // convert URLs to clickable links
         content = content.replace(
             /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/g, 
             '<a href="$1" target="_blank">$1</a>'
         );
-        // 支持换行符
+        // support line breaks
         content = content.replace(/\n/g, '<br>');
-        // 支持表情显示
+        // support emoji display
         return content;
     }
     
-    // 发送消息
+    // send message
     $('#message-form').submit(function(e) {
         e.preventDefault();
         const content = $('#message-input').val().trim();
         
         if (content) {
-            console.log('Sending message:', content); // 添加调试日志
+            console.log('Sending message:', content); // add debug log
             
             $.post('api/messages.php', { content: content })
                 .done(function(response) {
-                    console.log('Server response:', response); // 添加调试日志
+                    console.log('Server response:', response); // add debug log
                     if (response.success) {
                         $('#message-input').val('');
                         fetchMessages();
                         scrollToBottom();
                     } else {
-                        alert(response.error || '发送失败');
+                        alert(response.error || 'Failed to send message');
                     }
                 })
                 .fail(function(xhr, status, error) {
-                    console.error('发送失败:', error);
-                    console.error('状态码:', xhr.status);
-                    console.error('响应文本:', xhr.responseText);
-                    alert('发送失败，请检查网络连接');
+                    console.error('Failed to send message:', error);
+                    console.error('Status code:', xhr.status);
+                    console.error('Response text:', xhr.responseText);
+                    alert('Failed to send message, please check network connection');
                 });
         }
     });
     
-    // 更新在线用户列表
+    // update online users list
     function updateOnlineUsers() {
         $.get('api/users.php')
             .done(function(response) {
@@ -116,7 +116,7 @@ $(document).ready(function() {
                                     ${user.is_admin === '1' ? '<span class="admin-badge ms-2"><i class="fas fa-shield-alt"></i>管理员</span>' : ''}
                                     <small class="text-muted ms-2">${user.location ? `(${user.location})` : ''}</small>
                                 </div>
-                                <small class="text-muted">${user.signature || 'b站一支小丑鱼'}</small>
+                                <small class="text-muted">${user.signature || ''}</small>
                             </div>
                         </a>
                     `).join('');
@@ -124,11 +124,11 @@ $(document).ready(function() {
                 }
             })
             .fail(function(error) {
-                console.error('获取在线用户失败:', error);
+                console.error('failed to get online users', error);
             });
     }
     
-    // 显示用户名片
+    // show user profile
     $(document).on('click', '.username, .avatar, .list-group-item', function(e) {
         e.preventDefault();
         const userId = $(this).data('user-id');
@@ -141,8 +141,8 @@ $(document).ready(function() {
                             <img src="${user.avatar || 'assets/default-avatar.png'}" 
                                  class="rounded-circle mb-3" style="width: 100px; height: 100px;">
                             <h5>${user.nickname || user.username}</h5>
-                            <p class="text-muted">${user.signature || 'b站一支小丑鱼'}</p>
-                            <p>注册时间：${new Date(user.created_at).toLocaleDateString()}</p>
+                            <p class="text-muted">${user.signature || ''}</p>
+                            <p>Registration time: ${new Date(user.created_at).toLocaleDateString()}</p>
                         </div>
                     `;
                     $('.modal-body').html(html);
@@ -151,14 +151,14 @@ $(document).ready(function() {
             });
     });
     
-    // 表情按钮点击事件
+    // emoji button click event
     $('.emoji-picker-button').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         $('.emoji-panel').toggle();
     });
     
-    // 选择表情
+    // select emoji
     $(document).on('click', '.emoji-item', function(e) {
         e.preventDefault();
         const emoji = $(this).text();
@@ -172,39 +172,39 @@ $(document).ready(function() {
         $('.emoji-panel').hide();
     });
     
-    // 点击其他地方关闭表情面板
+    // click other places to close emoji panel
     $(document).on('click', function(e) {
         if (!$(e.target).closest('.emoji-picker-button, .emoji-panel').length) {
             $('.emoji-panel').hide();
         }
     });
     
-    // 转义HTML特殊字符
+    // escape HTML special characters
     function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
     
-    // 滚动到底部
+    // scroll to bottom
     function scrollToBottom() {
         const chatMessages = $('#chat-messages');
         chatMessages.scrollTop(chatMessages[0].scrollHeight);
     }
     
-    // 初始化
+    // initialize
     fetchMessages();
-    setInterval(fetchMessages, 3000);  // 每3秒更新一次消息
+    setInterval(fetchMessages, 3000);  // update messages every 3 seconds
     updateOnlineUsers();
-    setInterval(updateOnlineUsers, 15000);  // 每15秒更新一次在线用户
+    setInterval(updateOnlineUsers, 15000);  // update online users every 15 seconds
     scrollToBottom();
     
-    // 更新用户最后活动时间
+    // update user last activity time
     setInterval(function() {
         $.post('api/users.php', { action: 'heartbeat' });
-    }, 60000);  // 每分钟更新一次
+    }, 60000);  // update last activity time every minute
     
-    // 支持按Enter发送消息，按Shift+Enter换行
+    // support sending messages with Enter, and line breaks with Shift+Enter
     $('#message-input').keydown(function(e) {
         if (e.keyCode === 13 && !e.shiftKey) {
             e.preventDefault();
@@ -212,6 +212,6 @@ $(document).ready(function() {
         }
     });
     
-    // 更新用户位置信息
+    // update user location information
     $.get('api/update_location.php');
 }); 

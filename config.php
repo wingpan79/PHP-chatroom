@@ -1,14 +1,14 @@
 <?php
-// 安全检查：防止直接访问PHP文件
+// Security check: prevent direct access to PHP file
 defined('IN_CHAT') or exit('Access Denied');
 
-// 开启session
+// Start session
 session_start();
 
-// 设置时区
-date_default_timezone_set('Asia/Shanghai');
+// Set timezone
+date_default_timezone_set('Europe/London');
 
-// 数据库配置
+// Database configuration
 $db_config = [
     'host' => 'localhost',
     'username' => 'root',
@@ -16,26 +16,26 @@ $db_config = [
     'database' => 'chat'
 ];
 
-// 站点配置
+// Site configuration
 $site_config = [
-    'name' => '在线聊天室',
+    'name' => 'Online Chat Room',
     'url' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://localhost",
     'upload_path' => __DIR__ . '/uploads',
     'avatar_path' => __DIR__ . '/uploads/avatars',
     'max_upload_size' => 5 * 1024 * 1024, // 5MB
     'allowed_extensions' => ['jpg', 'jpeg', 'png', 'gif'],
-    'online_timeout' => 300, // 5分钟未活动视为离线
+    'online_timeout' => 300, // 5 minutes of inactivity considered offline
     'messages_per_page' => 50,
-    'secret_key' => '0f19996e7e3bfe9bbd21ab811fe4b0402b1ae3f553e1795ba56c730b25748168' // 用于加密等操作的密钥
+    'secret_key' => '0f19996e7e3bfe9bbd21ab811fe4b0402b1ae3f553e1795ba56c730b25748168' // Secret key for encryption operations
 ];
 
-// 错误报告设置
+// Error reporting settings
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/error.log');
 
-// 数据库连接
+// Database connection
 try {
     $pdo = new PDO(
         "mysql:host={$db_config['host']};dbname={$db_config['database']};charset=utf8mb4",
@@ -48,11 +48,11 @@ try {
         ]
     );
 } catch(PDOException $e) {
-    error_log("数据库连接失败: " . $e->getMessage());
-    die("系统维护中，请稍后再试...");
+    error_log("Database connection failed: " . $e->getMessage());
+    die("System maintenance, please try again later...");
 }
 
-// 辅助函数
+
 function is_ajax_request() {
     return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 
            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
@@ -82,7 +82,7 @@ function check_login() {
     }
 }
 
-// 定义常量
+// Define constants
 define('IN_CHAT', true);
 define('UPLOAD_PATH', $site_config['upload_path']);
 define('AVATAR_PATH', $site_config['avatar_path']);

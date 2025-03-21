@@ -3,12 +3,12 @@ define('IN_CHAT', true);
 require_once '../config.php';
 header('Content-Type: application/json');
 
-// 检查用户是否登录
+// check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    die(json_encode(['error' => '未登录']));
+    die(json_encode(['error' => 'Not logged in']));
 }
 
-// 获取消息
+// get messages
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $last_id = isset($_GET['last_id']) ? (int)$_GET['last_id'] : 0;
     
@@ -30,28 +30,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     exit;
 }
 
-// 发送消息
+// send message
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $content = trim($_POST['content'] ?? '');
     
     if (empty($content)) {
-        die(json_encode(['error' => '消息不能为空']));
+        die(json_encode(['error' => 'Message cannot be empty']));
     }
     
-    // 检查用户状态
+    // check user status
     $stmt = $pdo->prepare("SELECT status FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch();
     
     if (!$user || $user['status'] != 1) {
-        die(json_encode(['error' => '您的账号已被禁用']));
+        die(json_encode(['error' => 'Your account has been disabled']));
     }
     
     try {
-        // 添加调试信息
+        // add debug information
         error_log("Trying to send message: " . $content);
         
-        // 插入消息
+        // insert message
         $stmt = $pdo->prepare("INSERT INTO messages (user_id, content) VALUES (?, ?)");
         $result = $stmt->execute([$_SESSION['user_id'], $content]);
         
@@ -62,11 +62,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             ]);
         } else {
             error_log("Failed to insert message: " . print_r($stmt->errorInfo(), true));
-            echo json_encode(['error' => '发送失败，数据库错误']);
+            echo json_encode(['error' => 'Failed to send message, database error']);
         }
     } catch (PDOException $e) {
         error_log("Database error: " . $e->getMessage());
-        echo json_encode(['error' => '发送失败，请稍后重试']);
+        echo json_encode(['error' => 'Failed to send message, please try again later']);
     }
     exit;
 } 

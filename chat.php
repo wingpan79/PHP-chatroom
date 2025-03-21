@@ -2,13 +2,13 @@
 define('IN_CHAT', true);
 require_once 'config.php';
 
-// 检查用户是否登录
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-// 获取用户信息
+// Get user information
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $current_user = $stmt->fetch();
@@ -17,7 +17,7 @@ $current_user = $stmt->fetch();
 <!DOCTYPE html>
 <html>
 <head>
-    <title>聊天室 - 在线聊天</title>
+    <title>Chat Room - Online Chat</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
@@ -297,7 +297,7 @@ $current_user = $stmt->fetch();
             text-align: right;
         }
         .chat-messages {
-            padding: 20px 60px;  /* 增加左右内边距，为头像留出空间 */
+            padding: 20px 60px;  
         }
         .admin-badge {
             display: inline-block;
@@ -316,7 +316,7 @@ $current_user = $stmt->fetch();
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(221, 36, 118, 0.4);
         }
-        /* 针对右侧消息的管理员标识 */
+       
         .message-self .admin-badge {
             background: linear-gradient(45deg, #0072ff, #00c6ff);
             box-shadow: 0 2px 8px rgba(0, 114, 255, 0.3);
@@ -324,7 +324,7 @@ $current_user = $stmt->fetch();
         .message-self .admin-badge:hover {
             box-shadow: 0 4px 12px rgba(0, 114, 255, 0.4);
         }
-        /* 调整用户名容器的样式 */
+       
         .message .username-container {
             display: inline-flex;
             align-items: center;
@@ -347,7 +347,7 @@ $current_user = $stmt->fetch();
         .message-self .location-text {
             margin-right: 5px;
         }
-        /* 适配深色模式 */
+      
         @media (prefers-color-scheme: dark) {
             .chat-input {
                 background: #2d2d2d;
@@ -382,7 +382,7 @@ $current_user = $stmt->fetch();
             }
         }
 
-        /* 添加额外的保护层 */
+        
         body::before {
             content: "";
             position: fixed;
@@ -401,33 +401,33 @@ $current_user = $stmt->fetch();
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-3">
-                <!-- 用户信息卡片 -->
+                <!-- User Information Card -->
                 <div class="user-card">
                     <img src="<?php echo $current_user['avatar'] ?: 'assets/default-avatar.png'; ?>" 
-                         class="avatar" alt="头像">
+                         class="avatar" alt="Avatar">
                     <h5 class="mb-2">
                         <?php echo htmlspecialchars($current_user['username']); ?>
                         <?php if ($current_user['is_admin']): ?>
-                            <span class="admin-badge"><i class="fas fa-shield-alt"></i>管理员</span>
+                            <span class="admin-badge"><i class="fas fa-shield-alt"></i>Admin</span>
                         <?php endif; ?>
                     </h5>
-                    <p class="text-muted mb-3"><?php echo htmlspecialchars($current_user['signature'] ?: 'b站一支小丑鱼'); ?></p>
+                    <p class="text-muted mb-3"><?php echo htmlspecialchars($current_user['signature'] ?: ''); ?></p>
                     <div class="d-grid gap-2">
-                        <a href="profile.php" class="btn btn-outline-primary btn-sm">编辑资料</a>
+                        <a href="profile.php" class="btn btn-outline-primary btn-sm">Edit Profile</a>
                         <?php if ($current_user['is_admin']): ?>
-                            <a href="admin/" class="btn btn-outline-danger btn-sm">管理后台</a>
+                            <a href="admin/" class="btn btn-outline-danger btn-sm">Admin Panel</a>
                         <?php endif; ?>
-                        <a href="logout.php" class="btn btn-outline-secondary btn-sm">退出登录</a>
+                        <a href="logout.php" class="btn btn-outline-secondary btn-sm">Logout</a>
                     </div>
                 </div>
                 
-                <!-- 在线用户列表 -->
+                <!-- Online Users List -->
                 <div class="online-users">
                     <div class="card-header bg-primary text-white">
-                        <h6 class="mb-0"><i class="fas fa-users me-2"></i>在线用户</h6>
+                        <h6 class="mb-0"><i class="fas fa-users me-2"></i>Online Users</h6>
                     </div>
                     <div class="list-group list-group-flush" id="online-users">
-                        <!-- 通过Ajax动态加载 -->
+                        <!-- Dynamically loaded via Ajax -->
                     </div>
                 </div>
             </div>
@@ -435,7 +435,7 @@ $current_user = $stmt->fetch();
             <div class="col-md-9">
                 <div class="chat-container">
                     <div id="chat-messages" class="chat-messages">
-                        <!-- 消息内容通过Ajax动态加载 -->
+                        <!-- Message content loaded via Ajax -->
                     </div>
                     <div class="chat-input">
                         <form id="message-form" class="d-flex align-items-center gap-2">
@@ -444,7 +444,7 @@ $current_user = $stmt->fetch();
                                     <i class="far fa-smile"></i>
                                 </button>
                                 <div class="emoji-panel">
-                                    <!-- 表情列表 -->
+                                    <!-- Emoji list -->
                                     <span class="emoji-item">😊</span>
                                     <span class="emoji-item">😂</span>
                                     <span class="emoji-item">🤣</span>
@@ -469,12 +469,12 @@ $current_user = $stmt->fetch();
                             </div>
                             <div class="flex-grow-1 position-relative">
                                 <input type="text" id="message-input" class="form-control" 
-                                       placeholder="说点什么吧..." required>
-                                <div class="input-tips">按Enter发送，Shift+Enter换行</div>
+                                       placeholder="Say something..." required>
+                                <div class="input-tips">Press Enter to send, Shift+Enter for new line</div>
                             </div>
                             <button type="submit" class="btn btn-send">
                                 <i class="fas fa-paper-plane"></i>
-                                <span class="ms-1">发送</span>
+                                <span class="ms-1">Send</span>
                             </button>
                         </form>
                     </div>
@@ -483,16 +483,16 @@ $current_user = $stmt->fetch();
         </div>
     </div>
 
-    <!-- 用户名片模态框 -->
+    <!-- User Card Modal -->
     <div class="modal fade" id="userModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">用户信息</h5>
+                    <h5 class="modal-title">User Information</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- 用户信息通过Ajax加载 -->
+                    <!-- User information loaded via Ajax -->
                 </div>
             </div>
         </div>
@@ -505,10 +505,10 @@ $current_user = $stmt->fetch();
     (function() {
         
 
-        // 禁用右键菜单
+        // block right click
         document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-        // 禁用开发者工具快捷键
+        // block developer tools shortcut keys
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey && e.shiftKey && e.key === 'I') || // Ctrl+Shift+I
                 (e.ctrlKey && e.shiftKey && e.key === 'J') || // Ctrl+Shift+J

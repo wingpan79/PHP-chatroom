@@ -6,15 +6,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username']);
     $password = $_POST['password'];
     
-    // 检查IP是否被封禁
+    // Check if IP is banned
     $ip = $_SERVER['REMOTE_ADDR'];
     $stmt = $pdo->prepare("SELECT * FROM ip_blacklist WHERE ip = ?");
     $stmt->execute([$ip]);
     if ($stmt->rowCount() > 0) {
-        die("该IP已被封禁，无法登录");
+        die("This IP has been banned, unable to login");
     }
     
-    // 验证用户
+    // Validate user
     $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND status = 1");
     $stmt->execute([$username]);
     $user = $stmt->fetch();
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['username'] = $user['username'];
         $_SESSION['is_admin'] = $user['is_admin'];
         
-        // 更新最后登录时间
+        // Update last login time
         $ip = $_SERVER['REMOTE_ADDR'];
         $stmt = $pdo->prepare("UPDATE users SET last_login = NOW(), ip = ? WHERE id = ?");
         $stmt->execute([$ip, $user['id']]);
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header("Location: chat.php");
         exit;
     } else {
-        $error = "用户名或密码错误";
+        $error = "Invalid username or password";
     }
 }
 ?>
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>登录 - 在线聊天室</title>
+    <title>Login - Online Chat Room</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="card">
                     <div class="card-header text-center">
                         <i class="fas fa-user-circle fa-2x mb-3"></i>
-                        <h4 class="mb-0">用户登录</h4>
+                        <h4 class="mb-0">User Login</h4>
                     </div>
                     <div class="card-body p-4">
                         <?php if (isset($error)): ?>
@@ -130,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <span class="input-group-text">
                                         <i class="fas fa-user"></i>
                                     </span>
-                                    <input type="text" name="username" class="form-control" placeholder="请输入用户名" required>
+                                    <input type="text" name="username" class="form-control" placeholder="Enter username" required>
                                 </div>
                             </div>
                             <div class="mb-4">
@@ -138,17 +138,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <span class="input-group-text">
                                         <i class="fas fa-lock"></i>
                                     </span>
-                                    <input type="password" name="password" class="form-control" placeholder="请输入密码" required>
+                                    <input type="password" name="password" class="form-control" placeholder="Enter password" required>
                                 </div>
                             </div>
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-sign-in-alt me-2"></i>登录
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
                                 </button>
                             </div>
                             <div class="text-center mt-4">
                                 <a href="register.php" class="btn btn-link">
-                                    <i class="fas fa-user-plus me-1"></i>没有账号？去注册
+                                    <i class="fas fa-user-plus me-1"></i>No account? Register
                                 </a>
                             </div>
                         </form>
