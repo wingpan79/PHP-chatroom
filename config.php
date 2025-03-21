@@ -26,7 +26,7 @@ $site_config = [
     'allowed_extensions' => ['jpg', 'jpeg', 'png', 'gif'],
     'online_timeout' => 300, // 5 minutes of inactivity considered offline
     'messages_per_page' => 50,
-    'secret_key' => '0f19996e7e3bfe9bbd21ab811fe4b0402b1ae3f553e1795ba56c730b25748168' // Secret key for encryption operations
+    'secret_key' => '' // Secret key for encryption operations
 ];
 
 // Error reporting settings

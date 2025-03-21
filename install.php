@@ -123,9 +123,9 @@ date_default_timezone_set('Europe/London');
     'avatar_path' => __DIR__ . '/uploads/avatars',
     'max_upload_size' => 5 * 1024 * 1024, // 5MB
     'allowed_extensions' => ['jpg', 'jpeg', 'png', 'gif'],
-    'online_timeout' => 300, // 5分钟未活动视为离线
+    'online_timeout' => 300, 
     'messages_per_page' => 50,
-    'secret_key' => '$secret_key' // 用于加密等操作的密钥
+    'secret_key' => '$secret_key' // for encryption operations
 ];
 
 // error reporting settings
